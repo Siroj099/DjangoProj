@@ -1,0 +1,60 @@
+
+<div class="container mx-auto px-5">
+    <div class="grid grid-cols-1 gap-2">
+        {% for ticket in tickets %}
+        <div class="bg-white shadow-md rounded mb-4 p-4 resizable-ticket ticket">
+            <div>
+                <h2 class="ticket-title text-xl font-bold">{{ ticket.title }}</h2>
+                <p class="ticket-description text-gray-700">{{ ticket.description }}</p>
+                <p style="text-align: right;" class="font-bold text-sm text-black-500">By {{ ticket.author }} | {{ ticket.date|date:"d M Y H:i" }}</p>
+                <button onclick="toggleComments({{ ticket.id }})" class="bg-blue-500 text-white px-2 rounded hover:bg-blue-600">Comments</button>
+            
+                <!-- Comments Section -->
+                <div id="comments-{{ ticket.id }}" class="hidden mt-4">
+                    {% for comment in ticket.commented_ticket.all %}
+                    <div class="border-t border-gray-300 pt-2">
+                        <p><strong>{{ comment.author }}</strong>  
+                            <p>{{ comment.comment }}</p>
+                        </p>
+                        <p class="text-xs text-gray-500">{{ comment.date|date:"d M Y H:i" }}</p>
+                    </div>
+                    <button onclick="toggleReplies({{ comment.id }})" class="bg-blue-500 text-white px-2 rounded hover:bg-blue-500">Replies</button>
+                    <!-- Nested Replies -->
+                    {% for reply in comment.replied_comment.all %}
+                    <div id="replies-{{ comment.id }}" class="ml-4 border-l-2 border-gray-200 pl-4 hidden mt-4">
+                        <p><strong>{{ reply.author }}</strong> 
+                            <p>{{ reply.comment }}</p>
+                        </p>
+                        <p class="text-xs text-gray-500">{{ reply.date|date:"d M Y H:i" }}</p>
+                    </div>
+                    {% endfor %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="text-center text-gray-500">
+            No tickets found.
+        </div>
+        {% endfor %}
+    </div>
+    
+</div>
+<script>
+    function toggleComments(ticketId) {
+        const commentsSection = document.getElementById(`comments-${ticketId}`);
+        if (commentsSection.classList.contains('hidden')) {
+            commentsSection.classList.remove('hidden');
+        } else {
+            commentsSection.classList.add('hidden');
+        }
+    }
+    function toggleReplies(commentId){
+        const repliesSection = document.getElementById(`replies-${commentId}`)
+        if (repliesSection.classList.contains('hidden')) {
+            repliesSection.classList.remove('hidden');
+        } else {
+            repliesSection.classList.add('hidden');
+        }
+    }
+</script>

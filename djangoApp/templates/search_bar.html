@@ -1,0 +1,60 @@
+{% block content %}
+<div class="container mx-auto px-4 py-4">
+    <div class="mb-4">
+        <input type="text" 
+               id="searchInput" 
+               class="w-full p-2 border rounded"
+               placeholder="Search tickets..."
+               autocomplete="off">
+    </div>
+
+    <div id="searchResults">
+        {% include 'ticket_list.html' %}
+    </div>
+</div>
+
+{% block javascript %}
+<script>
+let searchTimer;
+const searchInput = document.getElementById('searchInput');
+const searchResults = document.getElementById('searchResults');
+
+searchInput.addEventListener('input', function() {
+    clearTimeout(searchTimer);
+    const query = this.value;
+    
+    // Add small delay to prevent too many requests
+    searchTimer = setTimeout(() => {
+        fetch(`search/?query=${encodeURIComponent(query)}`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'  // Specify that we expect JSON response
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Response data: ', data)
+
+            // if there will be error
+            if (!data.success) {
+                throw new Error(data.error);
+            }
+            // Clear existing results
+            searchResults.innerHTML = '';
+            
+            if (data.count === 0) {
+                searchResults.innerHTML = '<p class="text-gray-500 p-4">No tickets found</p>';
+                return;
+            }
+            
+            searchResults.innerHTML = data.html;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            searchResults.innerHTML = '<p class="text-red-500 p-4">Error loading results '+ error.message + '</p>';
+        });
+    }, 300);
+});
+</script>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Main Page</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .resizable-ticket {
+            resize: both; 
+            height: auto; 
+            width: auto;
+        }
+        .ticket {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+        }
+        .ticket-title {
+            text-align: center; 
+        }
+        .ticket-description {
+            padding: 15px; 
+        }
+
+        .pagination a, .pagination span {
+            margin: 0 5px;
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            text-decoration: none;
+            color: #000;
+        }
+        .pagination .current-page {
+            font-weight: bold;
+            background-color: #ddd;
+        }
+        .pagination a:hover {
+            background-color: light-blue;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Navbar -->
+    <div class="bg-white shadow-md">
+        <div class="container mx-auto px-5 py-4">
+            <h1 class="text-2xl font-bold">Tickets</h1>
+        </div>
+    </div>
+    <!-- Live Search Bar and Tickets-->
+    {% include 'search_bar.html' %}
+    <!-- Pagination -->
+    <div class="pagination">
+        <span>
+            Page {{ tickets.number }} of {{ tickets.paginator.num_pages }}
+        </span>
+
+        <!-- Previous Page -->
+        {% if tickets.has_previous %}
+            <a href="?page=1" content = "pagination a:hover">First</a>
+            <a href="?page={{ tickets.previous_page_number }}" content = "pagination a:hover">Previous</a>
+        {% endif %}
+
+        <!-- Page Numbers -->
+        {% for page in tickets.paginator.page_range %}
+            {% if page == tickets.number %}
+                <span class="current-page" content = "pagination a">{{ page }}</span>
+            {% else %}
+                <a href="?page={{ page }}">{{ page }}</a>
+            {% endif %}
+        {% endfor %}
+
+        <!-- Next Page -->
+        {% if tickets.has_next %}
+            <a href="?page={{ tickets.next_page_number }}" content = "pagination a:hover">Next</a>
+            <a href="?page={{ tickets.paginator.num_pages }}" content = "pagination a:hover">Last</a>
+        {% endif %}
+    </div>
+</body>
+</html>

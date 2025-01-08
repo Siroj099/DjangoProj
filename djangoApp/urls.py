@@ -5,6 +5,6 @@ from . import views
 
 urlpatterns=[
 
-path('hello/', views.say_hello)
-
+path('hello/', views.say_hello),
+path('hello/search/', views.search_tickets, name='search-tickets'),
 ]
