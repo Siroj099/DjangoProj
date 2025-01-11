@@ -1,4 +1,3 @@
-
 <div class="container mx-auto px-5">
     <div class="grid grid-cols-1 gap-2">
         {% for ticket in tickets %}
@@ -7,27 +6,58 @@
                 <h2 class="ticket-title text-xl font-bold">{{ ticket.title }}</h2>
                 <p class="ticket-description text-gray-700">{{ ticket.description }}</p>
                 <p style="text-align: right;" class="font-bold text-sm text-black-500">By {{ ticket.author }} | {{ ticket.date|date:"d M Y H:i" }}</p>
-                <button onclick="toggleComments({{ ticket.id }})" class="bg-blue-500 text-white px-2 rounded hover:bg-blue-600">Comments</button>
-            
-                <!-- Comments Section -->
+                
+                <button id="addCommentButton-{{ ticket.id }}" onclick="toggleAddComment({{ ticket.id }})"
+                class="bg-blue-500 text-white px-2 rounded hover:bg-blue-600">
+                Add Comment
+                </button>                
+                <div id="addCommentLabel-{{ ticket.id }}" class="hidden border-t border-gray-300 pt-2">
+                    <div id=>
+                        <label class="block text-sm font-medium text-gray-700">Author Name (First and Last Name)</label>
+                        <input type="text" id="ticketAuthor" required
+                            placeholder="e.g., John Cena"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+                            rows="1"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Description</label>
+                        <textarea id="ticketDescription" required
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+                            rows="4"></textarea>
+                    </div>
+                    </button>
+                    <button type="submit"
+                        class="px-4 py-2 bg-blue-400 text-white rounded hover:bg-blue-400">
+                        Comment
+                    </button>
+                    <button onclick="hideAddComment({{ticket.id}})"
+                        class="px-4 py-2 bg-red-300 text-white rounded hover:bg-blue-400">
+                        Cancel
+                    </button>
+                </div>
+                {% if ticket.direct_comments %}
+                    <button onclick="toggleComments({{ ticket.id }})" class="bg-blue-500 text-white px-2 rounded hover:bg-blue-600">Comments</button>
+                {% endif %}
+
                 <div id="comments-{{ ticket.id }}" class="hidden mt-4">
-                    {% for comment in ticket.commented_ticket.all %}
-                    <div class="border-t border-gray-300 pt-2">
-                        <p><strong>{{ comment.author }}</strong>  
+                    {% for comment in ticket.direct_comments %}
+                        <div class="border-t border-gray-300 pt-2">
+                            <p><strong>{{ comment.author }}</strong></p>
                             <p>{{ comment.comment }}</p>
-                        </p>
-                        <p class="text-xs text-gray-500">{{ comment.date|date:"d M Y H:i" }}</p>
-                    </div>
-                    <button onclick="toggleReplies({{ comment.id }})" class="bg-blue-500 text-white px-2 rounded hover:bg-blue-500">Replies</button>
-                    <!-- Nested Replies -->
-                    {% for reply in comment.replied_comment.all %}
-                    <div id="replies-{{ comment.id }}" class="ml-4 border-l-2 border-gray-200 pl-4 hidden mt-4">
-                        <p><strong>{{ reply.author }}</strong> 
-                            <p>{{ reply.comment }}</p>
-                        </p>
-                        <p class="text-xs text-gray-500">{{ reply.date|date:"d M Y H:i" }}</p>
-                    </div>
-                    {% endfor %}
+                            <p class="text-xs text-gray-500">{{ comment.date|date:"d M Y H:i" }}</p>
+                        
+                            {% if comment.replies %}
+                            <button onclick="toggleReplies({{ comment.id }})" class="bg-blue-500 text-white px-2 rounded hover:bg-blue-500 mt-2">
+                                Replies
+                            </button>
+                            <div id="nested-replies-{{ comment.id }}" class="hidden mt-2">
+                                {% for reply in comment.replies %}
+                                    <div class="border-l-2 border-gray-300 pl-4 ml-4 mt-2">
+                                        {% include 'comment_replies.html' %}
+                                </div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
                     {% endfor %}
                 </div>
             </div>
@@ -37,24 +67,40 @@
             No tickets found.
         </div>
         {% endfor %}
+        
     </div>
-    
 </div>
+
 <script>
     function toggleComments(ticketId) {
         const commentsSection = document.getElementById(`comments-${ticketId}`);
-        if (commentsSection.classList.contains('hidden')) {
-            commentsSection.classList.remove('hidden');
-        } else {
-            commentsSection.classList.add('hidden');
+        const isHidden = commentsSection.classList.contains('hidden');
+        commentsSection.classList.toggle('hidden');
+        
+        // Close all nested replies when hiding comments
+        if (!isHidden) {
+            const nestedReplies = commentsSection.querySelectorAll('[id^="nested-replies-"]');
+            nestedReplies.forEach(reply => reply.classList.add('hidden'));
         }
     }
-    function toggleReplies(commentId){
-        const repliesSection = document.getElementById(`replies-${commentId}`)
-        if (repliesSection.classList.contains('hidden')) {
-            repliesSection.classList.remove('hidden');
-        } else {
-            repliesSection.classList.add('hidden');
-        }
+
+    function toggleReplies(commentId) {
+        const repliesSection = document.getElementById(`nested-replies-${commentId}`);
+        repliesSection.classList.toggle('hidden');
+    }
+
+    function toggleAddComment(ticketId) {
+        const addCommentSection = document.getElementById(`addCommentLabel-${ticketId}`);
+        const addCommentButton = document.getElementById(`addCommentButton-${ticketId}`);
+        
+        addCommentSection.classList.toggle('hidden');
+        addCommentButton.classList.add('hidden');
+    }
+    function hideAddComment(ticketId) {
+        const addCommentSection = document.getElementById(`addCommentLabel-${ticketId}`);
+        const addCommentButton = document.getElementById(`addCommentButton-${ticketId}`);
+        
+        addCommentSection.classList.add('hidden');
+        addCommentButton.classList.remove('hidden');
     }
 </script>

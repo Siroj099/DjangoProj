@@ -49,32 +49,10 @@
     </div>
     <!-- Live Search Bar and Tickets-->
     {% include 'search_bar.html' %}
-    <!-- Pagination -->
-    <div class="pagination">
-        <span>
-            Page {{ tickets.number }} of {{ tickets.paginator.num_pages }}
-        </span>
 
-        <!-- Previous Page -->
-        {% if tickets.has_previous %}
-            <a href="?page=1" content = "pagination a:hover">First</a>
-            <a href="?page={{ tickets.previous_page_number }}" content = "pagination a:hover">Previous</a>
-        {% endif %}
-
-        <!-- Page Numbers -->
-        {% for page in tickets.paginator.page_range %}
-            {% if page == tickets.number %}
-                <span class="current-page" content = "pagination a">{{ page }}</span>
-            {% else %}
-                <a href="?page={{ page }}">{{ page }}</a>
-            {% endif %}
-        {% endfor %}
-
-        <!-- Next Page -->
-        {% if tickets.has_next %}
-            <a href="?page={{ tickets.next_page_number }}" content = "pagination a:hover">Next</a>
-            <a href="?page={{ tickets.paginator.num_pages }}" content = "pagination a:hover">Last</a>
-        {% endif %}
+    <div id="paginator" class="flex justify-center my-4">
+        {% include 'pagination.html' with page_obj=tickets page_range=page_range %}
     </div>
+    
 </body>
 </html>

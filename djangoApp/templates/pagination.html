@@ -1,0 +1,31 @@
+<div class="pagination flex items-center space-x-2">
+    {% if page_obj.has_previous %}
+        <a href="javascript:void(0)" 
+            onclick="changePage(1)" 
+            class="px-3 py-2 rounded border hover:bg-blue-100">First</a>
+        <a href="javascript:void(0)" 
+            onclick="changePage({{ page_obj.previous_page_number }})" 
+            class="px-3 py-2 rounded border hover:bg-blue-100">Previous</a>
+    {% endif %}
+
+    {% for page_num in page_range %}
+        {% if page_num == page_obj.number %}
+            <span class="px-3 py-2 rounded border bg-blue-500 text-white">{{ page_num }}</span>
+        {% elif page_num == "..." %}
+            <span class="px-3 py-2">...</span>
+        {% else %}
+            <a href="javascript:void(0)" 
+                onclick="changePage({{ page_num }})" 
+                class="px-3 py-2 rounded border hover:bg-blue-100">{{ page_num }}</a>
+        {% endif %}
+    {% endfor %}
+
+    {% if page_obj.has_next %}
+        <a href="javascript:void(0)" 
+            onclick="changePage({{ page_obj.next_page_number }})" 
+            class="px-3 py-2 rounded border hover:bg-blue-100">Next</a>
+        <a href="javascript:void(0)" 
+            onclick="changePage({{ page_obj.paginator.num_pages }})" 
+            class="px-3 py-2 rounded border hover:bg-blue-100">Last</a>
+    {% endif %}
+</div>

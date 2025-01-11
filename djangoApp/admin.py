@@ -8,7 +8,7 @@ class TicketAdmin(admin.ModelAdmin):
     list_per_page = 20   # Set number of displayed tickets per page
     
     def comment_count(self, ticket):
-        return ticket.commented_ticket.count()  # Count number of comment under the ticket using reverse relation
+        return ticket.comments_ticket.count()  # Count number of comment under the ticket using reverse relation
     
     comment_count.short_description = "Comment count" # Change column name
     
