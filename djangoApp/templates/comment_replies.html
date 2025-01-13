@@ -3,7 +3,7 @@
         <p><strong>{{ reply.author }}</strong></p>
         <p>{{ reply.comment }}</p>
         <p class="text-xs text-gray-500">{{ reply.date|date:"d M Y H:i" }}</p>
-        
+        {% include 'comment_add_reply.html' %}
         {% if reply.replies %}
             <button onclick="toggleReplies({{ reply.id }})" class="bg-blue-500 text-white px-2 rounded hover:bg-blue-500 mt-1">Replies</button>
             <div id="nested-replies-{{ reply.id }}" class="hidden">

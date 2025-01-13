@@ -194,3 +194,68 @@ def create_ticket(request):
             "success": False,
             "error": str(e)
         }, status=400)
+        
+@require_POST
+def create_comment(request):
+    if not request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({"success": False, "error": "Invalid request"}, status=400)
+    
+    try:
+        data = json.loads(request.body)
+        comment = data.get('comment')
+        author_full_name = data.get('author', '').strip()
+        ticket_id = data.get('ticketId')
+        
+        if not author_full_name or not comment or not ticket_id:
+            return JsonResponse({
+                "success": False,
+                "error": "Author or description are required"
+            }, status=400)
+                        
+        try:
+            ticket = Ticket.objects.get(id = ticket_id)
+        except Ticket.DoesNotExist:
+            return JsonResponse({
+                "success": False,
+                "error": "Invalid ticket ID"
+                
+            }, status=400)
+        
+        # code to handle Foreign key in author model
+        split_full_name = author_full_name.split()
+        if len(split_full_name) < 2:
+            return JsonResponse({
+                "success": False,
+                "error": "Please provide both first and last name!"
+            }, status=400)
+        
+        first_name = split_full_name[0]
+        last_name = ''.join(split_full_name[1:])
+        
+        author, created = Author.objects.get_or_create(
+            first_name = first_name,
+            last_name = last_name,
+        )
+        # Create new ticket
+        comment = Comment.objects.create(
+            comment=comment,
+            ticket = ticket,
+            author=author,  
+            date=timezone.now(),
+        )
+        
+        
+        # Clear relevant cache
+        cache.delete(f'tickets_page_1')  # Clear first page cache
+        cache.delete(f'search_tickets__1')  # Clear empty search first page
+        
+        return JsonResponse({
+            "success": True, 
+            "ticket_id": comment.id
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            "success": False,
+            "error": str(e)
+        }, status=400)

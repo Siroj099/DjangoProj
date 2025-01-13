@@ -219,7 +219,7 @@ async function handleCreateTicket(e) {
                 searchInput.value = '';
             }
             await liveSearch('', 1);
-            
+
         } else {
             alert('Error creating ticket: ' + data.error);
         }
@@ -227,8 +227,51 @@ async function handleCreateTicket(e) {
         console.error('Error:', error);
         alert('Error creating ticket. Please try again.');
     }
+}
 
+async function handleAddComment(ticketId){
+    const commentAuthor = document.getElementById(`commentAuthor-${ticketId}`).value;
+    const commentDescription = document.getElementById(`commentDescription-${ticketId}`).value;
 
+    const csrftoken = getCookie('csrftoken');
+
+    try {
+        const response = await fetch('create_comment/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrftoken,
+            },
+            body: JSON.stringify({
+                comment: commentDescription,
+                author: commentAuthor,
+                ticketId: ticketId,
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Clear Add comment fields
+            document.getElementById(`commentAuthor-${ticketId}`).value = '';
+            document.getElementById(`commentDescription-${ticketId}`).value = '';
+
+            // Refresh the ticket list
+            currentQuery = '';
+            currentPage = 1;
+
+            hideAddComment(ticketId)
+
+            await liveSearch(currentQuery, currentPage);
+
+        } else {
+            alert('Error creating comment: ' + data.error);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error creating comment. Please try again.');
+    }
 }
 
 function getCookie(name) {
