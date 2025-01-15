@@ -252,25 +252,58 @@ async function handleAddComment(ticketId){
         
         const data = await response.json();
         
-        if (data.success) {
-            // Clear Add comment fields
-            document.getElementById(`commentAuthor-${ticketId}`).value = '';
-            document.getElementById(`commentDescription-${ticketId}`).value = '';
+        if (data.success && data.ticketSection) {
 
-            // Refresh the ticket list
-            currentQuery = '';
-            currentPage = 1;
-
-            hideAddComment(ticketId)
-
-            await liveSearch(currentQuery, currentPage);
-
-        } else {
-            alert('Error creating comment: ' + data.error);
+            hideAddComment(ticketId);
+            await liveSearch('', 1);
         }
     } catch (error) {
         console.error('Error:', error);
         alert('Error creating comment. Please try again.');
+    }
+}
+
+async function handleAddReply(ticketId, commentId) {
+    const replyAuthor = document.getElementById(`replyAuthor-${commentId}`).value;
+    const replyDescription = document.getElementById(`replyDescription-${commentId}`).value;
+    
+    if (!replyAuthor || !replyDescription) {
+        alert('Please fill in both author name and reply description');
+            return;
+    }
+    
+    const csrftoken = getCookie('csrftoken');
+    try {
+        const response = await fetch('create_reply/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrftoken,
+            },
+            body: JSON.stringify({
+                reply: replyDescription,
+                author: replyAuthor,
+                ticketId: ticketId, 
+                commentId: commentId, 
+            }),
+        });
+    
+        const data = await response.json();
+    
+        if (data.success) {
+            // Clear Add reply fields
+            document.getElementById(`replyAuthor-${commentId}`).value = '';
+            document.getElementById(`replyDescription-${commentId}`).value = '';
+            hideAddReply(commentId);
+                
+            await liveSearch('', 1); // Refresh the comments or replies view
+        } else {
+            alert('Error creating reply: ' + data.error);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error creating reply. Please try again.');
     }
 }
 
@@ -288,4 +321,14 @@ function getCookie(name) {
         }
     }
     return cookieValue;
+}
+
+function attachEventListeners(ticketId) {
+    const newCommentForm = document.querySelector(`#ticketForm-${ticketId} form`);
+    if (newCommentForm) {
+        newCommentForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            handleAddComment(ticketId);
+        });
+    }
 }

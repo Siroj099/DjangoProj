@@ -1,75 +1,10 @@
-<div class="container mx-auto px-5">
-    <div class="grid grid-cols-1 gap-2">
-        {% for ticket in tickets %}
-        <div class="bg-white shadow-md rounded mb-4 p-4 resizable-ticket ticket">
-            <div>
-                <h2 class="ticket-title text-xl font-bold">{{ ticket.title }}</h2>
-                <p class="ticket-description text-gray-700">{{ ticket.description }}</p>
-                <p style="text-align: right;" class="font-bold text-sm text-black-500">By {{ ticket.author }} | {{ ticket.date|date:"d M Y H:i" }}</p>
-                
-                <button id="addCommentButton-{{ ticket.id }}" onclick="toggleAddComment({{ ticket.id }})"
-                class="bg-blue-500 text-white px-2 rounded hover:bg-blue-600">
-                Add Comment
-                </button>                
-                <div id="addCommentLabel-{{ ticket.id }}" class="hidden border-t border-gray-300 pt-2">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Author Name (First and Last Name)</label>
-                        <input type="text" id="commentAuthor-{{ ticket.id }}" required
-                            placeholder="e.g., John Cena"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
-                            rows="1"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Description</label>
-                        <textarea id="commentDescription-{{ ticket.id }}" required
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
-                            rows="4"></textarea>
-                    </div>
-                    </button>
-                    <button onclick="handleAddComment({{ ticket.id }})"
-                        class="px-4 py-2 bg-blue-400 text-white rounded hover:bg-blue-400">
-                        Comment
-                    </button>
-                    <button onclick="hideAddComment({{ ticket.id }})"
-                        class="px-4 py-2 bg-red-300 text-white rounded hover:bg-blue-400">
-                        Cancel
-                    </button>
-                </div>
-                {% if ticket.direct_comments %}
-                    <button onclick="toggleComments({{ ticket.id }})" class="bg-blue-500 text-white px-2 mt-3 rounded hover:bg-blue-600">Comments</button>
-                {% endif %}
-
-                <div id="comments-{{ ticket.id }}" class="hidden mt-4">
-                    {% for comment in ticket.direct_comments %}
-                        <div class="border-t border-gray-300 pt-2">
-                            <p><strong>{{ comment.author }}</strong></p>
-                            <p>{{ comment.comment }}</p>
-                            <p class="text-xs text-gray-500">{{ comment.date|date:"d M Y H:i" }}</p>
-                            {% include 'comment_add_reply.html' %}
-                            {% if comment.replies %}
-                            <button onclick="toggleReplies({{ comment.id }})" class="bg-blue-500 text-white px-2 rounded hover:bg-blue-500 mt-2">
-                                Replies
-                            </button>
-                            <div id="nested-replies-{{ comment.id }}" class="hidden mt-2">
-                                {% for reply in comment.replies %}
-                                    <div class="border-l-2 border-gray-300 pl-4 ml-4 mt-2">
-                                        {% include 'comment_replies.html' %}
-                                </div>
-                                {% endfor %}
-                            {% endif %}
-                        </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-        {% empty %}
-        <div class="text-center text-gray-500">
-            No tickets found.
-        </div>
-        {% endfor %}
-        
+{% for ticket in tickets %}
+    {% include 'single_ticket.html' %}
+{% empty %}
+    <div class="text-center text-gray-500">
+        No tickets found.
     </div>
-</div>
+{% endfor %}
 
 <script>
     // Comment functions

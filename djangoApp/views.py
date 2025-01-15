@@ -90,7 +90,7 @@ def search_tickets(request):
         return JsonResponse({"success": False, "error": "Invalid request"}, status=400)
     
     try:
-        query = request.GET.get('query', '').strip()
+        query = request.GET.get('query', '')
         page = int(request.GET.get('page', 1))
         
         cache_key = f'search_tickets_{query}_{page}'
@@ -99,13 +99,10 @@ def search_tickets(request):
         if cached_result:
             return JsonResponse(cached_result)
         
-        if query:
-            tickets = Ticket.objects.filter(
-                Q(title__icontains=query) |
-                Q(description__icontains=query)
-            )
-        else:
-            tickets = Ticket.objects.all()
+        tickets = Ticket.objects.filter(
+            Q(title__icontains=query) |
+            Q(description__icontains=query)
+        ).distinct()
         
         tickets = tickets.select_related('author').prefetch_related(
             *get_prefetch_comments()
@@ -114,7 +111,7 @@ def search_tickets(request):
         paginator = Paginator(tickets, 10)
         current_page = paginator.get_page(page)
         
-        serialized_tickets = serialize_tickets(current_page.object_list)  # Serialize tickets
+        serialized_tickets = serialize_tickets(current_page.object_list)
         
         response_data = {
             "success": True,
@@ -204,8 +201,8 @@ def create_comment(request):
         data = json.loads(request.body)
         comment = data.get('comment')
         author_full_name = data.get('author', '').strip()
-        ticket_id = data.get('ticketId')
-        
+        ticket_id = data.get('ticketId')    
+            
         if not author_full_name or not comment or not ticket_id:
             return JsonResponse({
                 "success": False,
@@ -213,14 +210,25 @@ def create_comment(request):
             }, status=400)
                         
         try:
-            ticket = Ticket.objects.get(id = ticket_id)
+            ticket = Ticket.objects.select_related('author').prefetch_related(
+                Prefetch(
+                    'comments_ticket',
+                    queryset=Comment.objects.filter(parent=None)
+                                          .order_by('-date')
+                                          .select_related('author'),
+                    to_attr='direct_comments'
+                )
+            ).get(id=ticket_id)
         except Ticket.DoesNotExist:
             return JsonResponse({
                 "success": False,
                 "error": "Invalid ticket ID"
-                
-            }, status=400)
+            }, status=400)    
         
+        print("Ticket comments after creation:", ticket.direct_comments)
+        for comment in ticket.direct_comments:
+            print(f"Comment author: {comment.author}, text: {comment.comment}, date: {comment.date}")
+            
         # code to handle Foreign key in author model
         split_full_name = author_full_name.split()
         if len(split_full_name) < 2:
@@ -236,7 +244,7 @@ def create_comment(request):
             first_name = first_name,
             last_name = last_name,
         )
-        # Create new ticket
+        # Create new comment
         comment = Comment.objects.create(
             comment=comment,
             ticket = ticket,
@@ -249,13 +257,89 @@ def create_comment(request):
         cache.delete(f'tickets_page_1')  # Clear first page cache
         cache.delete(f'search_tickets__1')  # Clear empty search first page
         
+        # Render single ticket template
+        updated_ticket_html = render_to_string('single_ticket.html', {
+            #'ticket': ticket,
+            'direct_comments': ticket.direct_comments,
+        }, request=request ) 
+
+        
+        print("New comment created:", comment)
+        print("Rendered HTML:", updated_ticket_html)
+        
+        
         return JsonResponse({
             "success": True, 
-            "ticket_id": comment.id
+            "ticketSection": updated_ticket_html,
         })
-        
     except Exception as e:
         return JsonResponse({
             "success": False,
             "error": str(e)
         }, status=400)
+
+        
+@require_POST
+def create_reply(request):
+    if not request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({"success": False, "error": "Invalid request"}, status=400)
+
+    try:
+        data = json.loads(request.body)
+        reply_text = data.get('reply')  
+        author_full_name = data.get('author', '').strip()
+        ticket_id = data.get('ticketId')  
+        comment_id = data.get('commentId') 
+
+        if not author_full_name or not reply_text or not comment_id:
+            return JsonResponse({
+                "success": False,
+                "error": "Author, reply text, and comment ID are required."
+            }, status=400)
+
+        try:
+            ticket = Ticket.objects.get(id=ticket_id)
+        except Comment.DoesNotExist:
+            return JsonResponse({
+                "success": False,
+                "error": "Invalid comment ID."
+            }, status=400)
+
+        try:
+            comment = Comment.objects.get(id=comment_id)
+        except Comment.DoesNotExist:
+            return JsonResponse({
+                "success": False,
+                "error": "Invalid comment ID."
+            }, status=400)
+
+        split_full_name = author_full_name.split()
+        if len(split_full_name) < 2:
+            return JsonResponse({
+                "success": False,
+                "error": "Please provide both first and last name!"
+            }, status=400)
+
+        first_name = split_full_name[0]
+        last_name = ''.join(split_full_name[1:])
+        author, created = Author.objects.get_or_create(
+            first_name=first_name,
+            last_name=last_name,
+        )
+
+        reply = Comment.objects.create(
+            comment=reply_text,
+            ticket=ticket, 
+            author=author,
+            date=timezone.now(),
+            parent=comment,  # Set the parent reply (if any)
+        )
+
+        # Clear cache
+        cache.delete(f'tickets_page_1')
+        cache.delete(f'search_tickets__1')
+
+        return JsonResponse({"success": True, "reply_id": reply.id})
+
+    except Exception as e:
+        return JsonResponse({"success": False, "error": str(e)}, status=400)
