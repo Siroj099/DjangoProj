@@ -2,7 +2,7 @@
     <div>
         <h2 class="ticket-title text-xl font-bold">{{ ticket.title }}</h2>
         <p class="ticket-description text-gray-700">{{ ticket.description }}</p>
-        <p style="text-align: right;" class="font-bold text-sm text-black-500">By {{ ticket.author }} | {{ ticket.date|date:"d M Y H:i" }}</p>
+        <p style="text-align: right;" class="font-bold text-sm text-black-500">By {{ ticket.author.first_name }} {{ ticket.author.last_name }} | {{ ticket.date|date:"d M Y H:i" }}</p>
 
         <button id="addCommentButton-{{ ticket.id }}" onclick="toggleAddComment({{ ticket.id }})"
             class="bg-blue-500 text-white px-2 rounded hover:bg-blue-600">
@@ -39,7 +39,7 @@
             <div id="comments-{{ ticket.id }}" class="hidden mt-4">
                 {% for comment in ticket.direct_comments %}
                 <div class="border-t border-gray-300 pt-2">
-                    <p><strong>{{ comment.author }}</strong></p>
+                    <p><strong>{{ comment.author.first_name }} {{ comment.author.last_name }}</strong></p>
                     <p>{{ comment.comment }}</p>
                     <p class="text-xs text-gray-500">{{ comment.date|date:"d M Y H:i" }}</p>
                 

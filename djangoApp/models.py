@@ -22,10 +22,10 @@ class Ticket(models.Model):
         return self.title
     
     def get_direct_comments(self):
-        return self.comments.filter(parent = None)
+        return self.comments_ticket.filter(parent = None)
     
     def get_comment_count(self):
-        return self.comments.count()
+        return self.comments_ticket.count()
     class Meta:
         ordering = ['title']
         indexes = [

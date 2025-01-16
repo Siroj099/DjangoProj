@@ -8,37 +8,11 @@ from django.core.cache import cache
 from django.views.decorators.gzip import gzip_page
 from django.utils import timezone
 from .models import Ticket, Comment, Author
-
+from .serializers import TicketSerializer
 import json
-
-def serialize_comments(comment):
-    return {
-        "id": comment.id,
-        "comment": comment.comment,
-        "date": comment.date,
-        "author": comment.author,
-        "replies":[
-            serialize_comments(reply) for reply in getattr(comment, 'replies').all()
-        ] if hasattr(comment, 'replies') else []
-    }
-
-
-def serialize_tickets(tickets):
-    #Custom function to serialize tickets with comments
-    return [{
-        "id": ticket.id,
-        "title": ticket.title,
-        "description": ticket.description,
-        "author": ticket.author,
-        "date": ticket.date,
-        "direct_comments": [
-            serialize_comments(comment) for comment in ticket.direct_comments
-        ] if hasattr(ticket, 'direct_comments') else []
-    } for ticket in tickets]
 
 
 def get_prefetch_comments():
-    """Helper function to create comment prefetch objects"""
     return [
         Prefetch(
             'comments_ticket',
@@ -74,9 +48,9 @@ def say_hello(request):
     except Exception:
         page_obj = paginator.get_page(1)
     
-    serialized_tickets = serialize_tickets(page_obj.object_list)  # Serialize tickets
+    serialized_tickets = TicketSerializer(page_obj.object_list, many = True)  # Serialize tickets
     context = {
-        'tickets': serialized_tickets,
+        'tickets': serialized_tickets.data,
         'page_range': list(paginator.get_elided_page_range(page_obj.number, on_each_side=2, on_ends=1)),
     }
     cache.set(cache_key, context, 30)
@@ -111,13 +85,13 @@ def search_tickets(request):
         paginator = Paginator(tickets, 10)
         current_page = paginator.get_page(page)
         
-        serialized_tickets = serialize_tickets(current_page.object_list)
+        serialized_tickets = TicketSerializer(current_page.object_list, many = True)
         
         response_data = {
             "success": True,
             "html": render_to_string(
                 'ticket_list.html',
-                {'tickets': serialized_tickets},
+                {'tickets': serialized_tickets.data},
                 request
             ),
             "count": tickets.count(),
@@ -153,7 +127,7 @@ def create_ticket(request):
                 "error": "Title, author and description are required"
             }, status=400)
         
-        # code to handle Foreign key in author model
+        
         split_full_name = author_full_name.split()
         if len(split_full_name) < 2:
             return JsonResponse({
@@ -168,7 +142,7 @@ def create_ticket(request):
             first_name = first_name,
             last_name = last_name,
         )
-        # Create new ticket
+        
         ticket = Ticket.objects.create(
             title=title,
             description=description,
@@ -178,8 +152,8 @@ def create_ticket(request):
         
         
         # Clear relevant cache
-        cache.delete(f'tickets_page_1')  # Clear first page cache
-        cache.delete(f'search_tickets__1')  # Clear empty search first page
+        cache.delete(f'tickets_page_1')  
+        cache.delete(f'search_tickets__1')  
         
         return JsonResponse({
             "success": True, 
@@ -244,7 +218,7 @@ def create_comment(request):
             first_name = first_name,
             last_name = last_name,
         )
-        # Create new comment
+        
         comment = Comment.objects.create(
             comment=comment,
             ticket = ticket,
@@ -254,13 +228,13 @@ def create_comment(request):
         
         
         # Clear relevant cache
-        cache.delete(f'tickets_page_1')  # Clear first page cache
-        cache.delete(f'search_tickets__1')  # Clear empty search first page
+        cache.delete(f'tickets_page_1')  
+        cache.delete(f'search_tickets__1') 
         
         # Render single ticket template
         updated_ticket_html = render_to_string('single_ticket.html', {
             #'ticket': ticket,
-            'direct_comments': ticket.direct_comments,
+             'direct_comments': ticket.direct_comments,
         }, request=request ) 
 
         
@@ -332,7 +306,7 @@ def create_reply(request):
             ticket=ticket, 
             author=author,
             date=timezone.now(),
-            parent=comment,  # Set the parent reply (if any)
+            parent=comment,  
         )
 
         # Clear cache

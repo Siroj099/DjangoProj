@@ -1,6 +1,6 @@
 {% for reply in comment.replies %}
     <div id="replies-{{ reply.id }}" class="ml-4 border-l-2 border-gray-200 pl-4 mt-2">
-        <p><strong>{{ reply.author }}</strong></p>
+        <p><strong>{{ reply.author.first_name }} {{ reply.author.last_name }}</strong></p>
         <p>{{ reply.comment }}</p>
         <p class="text-xs text-gray-500">{{ reply.date|date:"d M Y H:i" }}</p>
         {% with comment=reply template_name='comment_add_reply.html' %}
