@@ -5,11 +5,12 @@ from django.template.loader import render_to_string
 from django.core.paginator import Paginator
 from django.views.decorators.http import require_GET, require_POST
 from django.core.cache import cache
-from django.views.decorators.gzip import gzip_page
 from django.utils import timezone
-from drf_yasg.utils import swagger_auto_schema
-from drf_yasg import openapi
-from rest_framework.decorators import api_view
+from datetime import datetime
+# from drf_yasg.utils import swagger_auto_schema
+# from drf_yasg import openapi
+# from rest_framework.decorators import api_view
+from dateutil import parser
 from .models import Ticket, Comment, Author
 from .serializers import TicketSerializer
 import json
@@ -22,6 +23,13 @@ def say_hello(request):
     
     cached_data = cache.get(cache_key)
     if cached_data:
+        for ticket in cached_data['tickets']:
+            # Check if 'date' is already a datetime object, if so, format it
+            if isinstance(ticket['date'], str):
+                ticket['date'] = parser.parse(ticket['date'])  # Parse if it's a string
+            # If it's already a datetime object, you can format it
+            elif isinstance(ticket['date'], datetime):
+                ticket['date'] = ticket['date'].strftime('%Y-%m-%d %H:%M:%S')  # Example format
         return render(request, 'main_page.html', cached_data)
     
     tickets = Ticket.objects.select_related('author').prefetch_related(
@@ -185,11 +193,7 @@ def create_comment(request):
             return JsonResponse({
                 "success": False,
                 "error": "Invalid ticket ID"
-            }, status=400)    
-        
-        print("Ticket comments after creation:", ticket.direct_comments)
-        for comment in ticket.direct_comments:
-            print(f"Comment author: {comment.author}, text: {comment.comment}, date: {comment.date}")
+            }, status=400)
             
         # code to handle Foreign key in author model
         split_full_name = author_full_name.split()

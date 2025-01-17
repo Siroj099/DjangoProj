@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Author, Ticket, Comment
+from django.utils.timezone import localtime
 
 class AuthorSerializer(serializers.ModelSerializer):
     """Serializer for the Author model."""
@@ -12,6 +13,7 @@ class CommentSerializer(serializers.ModelSerializer):
     """Serializer for the Comment model, including nested replies."""
     author = AuthorSerializer()  # Serialize the author
     replies = serializers.SerializerMethodField()  # Serialize nested replies
+    date = serializers.DateTimeField(format=None)
 
     class Meta:
         model = Comment
@@ -27,6 +29,7 @@ class TicketSerializer(serializers.ModelSerializer):
     """Serializer for the Ticket model, including nested comments."""
     author = AuthorSerializer()  # Serialize the author
     direct_comments = serializers.SerializerMethodField()  # Serialize direct comments
+    date = serializers.DateTimeField(format=None)
 
     class Meta:
         model = Ticket
