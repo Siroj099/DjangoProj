@@ -7,27 +7,13 @@ from django.views.decorators.http import require_GET, require_POST
 from django.core.cache import cache
 from django.views.decorators.gzip import gzip_page
 from django.utils import timezone
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
+from rest_framework.decorators import api_view
 from .models import Ticket, Comment, Author
 from .serializers import TicketSerializer
 import json
 
-
-def get_prefetch_comments():
-    return [
-        Prefetch(
-            'comments_ticket',
-            queryset=Comment.objects.filter(parent=None)
-                .select_related('author')
-                .order_by('date'),
-            to_attr='direct_comments'
-        ),
-        Prefetch(
-            'comments_ticket__replies',
-            queryset=Comment.objects.select_related('author')
-                .order_by('date'),
-            to_attr='parent'
-        )
-    ]
 
 @require_GET
 def say_hello(request):
@@ -57,7 +43,7 @@ def say_hello(request):
     return render(request, 'main_page.html', context)
 
 
-@gzip_page
+
 @require_GET
 def search_tickets(request):
     if not request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -109,7 +95,9 @@ def search_tickets(request):
     except Exception as e:
         return JsonResponse({"success": False, "error": str(e)}, status=400)
     
-    
+
+
+
 @require_POST
 def create_ticket(request):
     if not request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -165,7 +153,7 @@ def create_ticket(request):
             "success": False,
             "error": str(e)
         }, status=400)
-        
+
 @require_POST
 def create_comment(request):
     if not request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -251,8 +239,7 @@ def create_comment(request):
             "success": False,
             "error": str(e)
         }, status=400)
-
-        
+ 
 @require_POST
 def create_reply(request):
     if not request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -317,3 +304,20 @@ def create_reply(request):
 
     except Exception as e:
         return JsonResponse({"success": False, "error": str(e)}, status=400)
+    
+def get_prefetch_comments():
+    return [
+        Prefetch(
+            'comments_ticket',
+            queryset=Comment.objects.filter(parent=None)
+                .select_related('author')
+                .order_by('date'),
+            to_attr='direct_comments'
+        ),
+        Prefetch(
+            'comments_ticket__replies',
+            queryset=Comment.objects.select_related('author')
+                .order_by('date'),
+            to_attr='parent'
+        )
+    ]

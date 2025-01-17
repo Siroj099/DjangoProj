@@ -16,11 +16,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+# from .swagger import schema_view
 import debug_toolbar
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('djangoApp/', include('djangoApp.urls')),
-    path('__debug__/', include(debug_toolbar.urls) )
+    path('__debug__/', include(debug_toolbar.urls)),
+    # path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
 ]
