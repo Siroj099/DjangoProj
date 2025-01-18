@@ -1,0 +1,46 @@
+name: Deploy to server
+
+on:
+  push:
+    branches: [ $default-branch ]
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    strategy:
+      matrix:
+        python-version: [ 3.10.5 ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      - name: Set Up Docker
+        uses: docker/setup-buildx-activity@v2
+
+      - name: Log in to Docker
+        env:
+            DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+            DOCKER_USERNAME: ${{ secrets.DOCKET_USERNAME }}
+        run: docker login -u $DOCKER_USERNAME --password-stdin
+
+      - name: SSH to Server and Deploy
+        uses: appleboy/ssh-action@0.1.5
+        with:
+            sudo rm -rf DjangoProj
+
+            mkdir DjangoProj
+
+            cd DjangoProj
+
+            git clone https://github.com/Siroj099/DjangoProj.git .
+
+            docker build -t Siroj099/DjangoProj:latest .
+            docker push Siroj099/DjangoProj:latest
+
+            sudo docker compose down
+            sudo docker compose up -d --build
+
+            sudo docker exec django-DjangoProj python manage.py migrate
+            sudo docker exec django-DjangoProj python manage.py collectstatic --noinput
+
+         

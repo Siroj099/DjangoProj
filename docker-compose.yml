@@ -2,8 +2,9 @@ services:
   web:
     build:
       context: .
+      dockerfile: dockerfile
     ports:
-      - "8000:8000"
+      - "8080:8080"
     volumes:
       - .:/djangoApp
     depends_on:
@@ -13,7 +14,7 @@ services:
       - DEBUG=True
       - DATABASE_URL=postgres://postgres:postgres@db:5432/petproject
       - REDIS_URL=redis://redis:6379/0
-    command: python manage.py runserver 0.0.0.0:8000
+    # command: python manage.py runserver 0.0.0.0:8000
 
   db:
     image: postgres:15
