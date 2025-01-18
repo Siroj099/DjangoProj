@@ -2,8 +2,9 @@ name: Deploy to server
 
 on:
   push:
-    branches: [ $default-branch ]
-
+    branches: [ "main" ]
+  pull-request:
+    branches: [ "main" ]
 jobs:
   deploy:
     runs-on: self-hosted
