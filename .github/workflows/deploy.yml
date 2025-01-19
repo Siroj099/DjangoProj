@@ -38,7 +38,7 @@ jobs:
                 docker push siroj099/djangoapp:latest
                 sudo docker compose down
                 sudo docker compose up -d --build
-                sudo docker exec djangoproj-web python manage.py migrate
-                sudo docker exec djangoproj-web python manage.py collectstatic --noinput
+                sudo docker exec djangoproj-web-1 python manage.py migrate
+                sudo docker exec djangoproj-web-1 python manage.py collectstatic --noinput
 
          
