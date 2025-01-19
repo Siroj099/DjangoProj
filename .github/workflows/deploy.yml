@@ -22,13 +22,6 @@ jobs:
         with:
             password: ${{ secrets.DOCKER_PASSWORD }}
             username: ${{ secrets.DOCKER_USERNAME }}
-      - name: Start SSH Agent and Add Key
-        run: |
-          eval "$(ssh-agent -s)"
-          echo "$SERVER_SSH_KEY" | tr -d '\r' | ssh-add - <<< "$SERVER_SSH_PASSPHRASE"
-        env:
-          SERVER_SSH_KEY: ${{ secrets.SERVER_SSH_KEY }}
-          SERVER_SSH_PASSPHRASE: ${{ secrets.SERVER_SSH_PASSPHRASE }}
 
       - name: SSH to Server and Deploy
         uses: appleboy/ssh-action@v0.1.5
