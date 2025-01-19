@@ -21,7 +21,7 @@ jobs:
         uses: docker/login-action@v2
         env:
             DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-            DOCKER_USERNAME: ${{ secrets.DOCKET_USERNAME }}
+            DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
 
       - name: SSH to Server and Deploy
         uses: appleboy/ssh-action@v0.1.5
