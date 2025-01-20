@@ -18,18 +18,16 @@ import json
 
 @require_GET
 def say_hello(request):
-    page_number = int(request.GET.get('page', 1))
+    page_number = 1
     cache_key = f'tickets_page_{page_number}'
     
     cached_data = cache.get(cache_key)
     if cached_data:
         for ticket in cached_data['tickets']:
-            # Check if 'date' is already a datetime object, if so, format it
             if isinstance(ticket['date'], str):
-                ticket['date'] = parser.parse(ticket['date'])  # Parse if it's a string
-            # If it's already a datetime object, you can format it
+                ticket['date'] = parser.parse(ticket['date'])             
             elif isinstance(ticket['date'], datetime):
-                ticket['date'] = ticket['date'].strftime('%Y-%m-%d %H:%M:%S')  # Example format
+                ticket['date'] = ticket['date'].strftime('%Y-%m-%d %H:%M:%S')
         return render(request, 'main_page.html', cached_data)
     
     tickets = Ticket.objects.select_related('author').prefetch_related(
