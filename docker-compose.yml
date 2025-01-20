@@ -12,7 +12,7 @@ services:
       - redis
     environment:
       - DEBUG=True
-      - DATABASE_URL=postgres://postgres:postgres@db:5431/petproject
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/petproject
       - REDIS_URL=redis://redis:6379/0
     # command: python manage.py runserver 0.0.0.0:8000
 
@@ -26,7 +26,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5431:5432"
+      - "5432:5432"
 
   redis:
     image: redis:7
