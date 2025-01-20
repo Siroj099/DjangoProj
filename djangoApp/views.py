@@ -228,11 +228,6 @@ def create_comment(request):
             #'ticket': ticket,
              'direct_comments': ticket.direct_comments,
         }, request=request ) 
-
-        
-        print("New comment created:", comment)
-        print("Rendered HTML:", updated_ticket_html)
-        
         
         return JsonResponse({
             "success": True, 
