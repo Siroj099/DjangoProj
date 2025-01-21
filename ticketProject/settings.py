@@ -12,10 +12,12 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import os
+import environ
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+env = environ.Env()
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -88,12 +90,12 @@ WSGI_APPLICATION = 'ticketProject.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'petproject',
-        'USER': 'postgres',
-        'PASSWORD': 'postgres',
-        'HOST': 'db',
-        'PORT': '5432',
+        'ENGINE': env.str("DB_ENGINE"),
+        'NAME': env.str("DB_NAME"),
+        'USER': env.str("DB_USER"),
+        'PASSWORD': env.get_value("DB_PASSWORD"),
+        'HOST': env.str("DB_HOST"),
+        'PORT': env.srt("DB_PORT"),
     }
 }
 
