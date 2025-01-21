@@ -12,18 +12,17 @@ services:
       - redis
     environment:
       - DEBUG=True
-      - DATABASE_URL=postgres://postgres:postgres@db:5432/petproject
-      - REDIS_URL=${LOCATION}
+
 
   db:
-    image: postgres:15
+    image: postgres:15.6
     restart: always
     environment:
-      - POSTGRES_USER=${USER}
-      - POSTGRES_PASSWORD=${PASSWORD}
-      - POSTGRES_DB=${NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
     ports:
-      - ${PORT}:5432 
+      - ${DB_PORT}:5432 
     volumes:
       - postgres_data:/var/lib/postgresql/data
     env_file:
@@ -31,7 +30,7 @@ services:
 
 
   redis:
-    image: redis:7
+    image: redis:7.0.15
     restart: always
     ports:
       - "6379:6379"

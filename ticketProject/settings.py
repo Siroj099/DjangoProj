@@ -96,7 +96,7 @@ DATABASES = {
         'USER': env.str("DB_USER"),
         'PASSWORD': env.get_value("DB_PASSWORD"),
         'HOST': env.str("DB_HOST"),
-        'PORT': env.srt("DB_PORT"),
+        'PORT': env.str("DB_PORT"),
     }
 }
 
@@ -104,7 +104,7 @@ DATABASES = {
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://redis:6379/1', 
+        'LOCATION': env.str("REDIS_URL"), 
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
         },
