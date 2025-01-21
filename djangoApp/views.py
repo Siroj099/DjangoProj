@@ -18,7 +18,7 @@ import json
 
 @require_GET
 def say_hello(request):
-    page_number = 1
+    page_number = int(request.GET.get('page', 1))
     cache_key = f'tickets_page_{page_number}'
     
     cached_data = cache.get(cache_key)
