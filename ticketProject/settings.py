@@ -91,11 +91,11 @@ WSGI_APPLICATION = 'ticketProject.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': env.str("DB_ENGINE"),
+        'ENGINE': 'django.db.backends.postgresql',
         'NAME': env.str("DB_NAME"),
         'USER': env.str("DB_USER"),
         'PASSWORD': env.get_value("DB_PASSWORD"),
-        'HOST': env.str("DB_HOST"),
+        'HOST': 'db',
         'PORT': env.str("DB_PORT"),
     }
 }
