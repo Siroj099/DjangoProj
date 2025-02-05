@@ -1,2 +1,9 @@
-/tests
+*.pyc
+*.pyo
+*.pyd
+__pycache__
+venv/
+*.sqlite3
 /venv
+/__pycache__
+/djangoApp/__pycache__
