@@ -7,3 +7,5 @@ venv/
 /venv
 /__pycache__
 /djangoApp/__pycache__/
+dump.rdb
+.vscode
