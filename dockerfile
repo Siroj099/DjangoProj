@@ -25,5 +25,3 @@ EXPOSE 8080
 RUN ls -lah /usr/local/bin/dockerize && dockerize --version
 
 ENTRYPOINT ["dockerize", "-wait", "tcp://db:5432", "-timeout", "60s", "python", "manage.py", "runserver", "0.0.0.0:8080"]
-
-CMD ["python", "manage.py", "runserver", "127.0.0.1:8080"]

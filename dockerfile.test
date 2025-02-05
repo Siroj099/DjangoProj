@@ -1,0 +1,23 @@
+FROM python:3.10.5-slim
+
+ENV PYTHONUNBUFFERED=1
+
+WORKDIR /code
+
+RUN apt-get update && \
+    apt-get install -y \
+    curl \
+    postgresql-client \
+    pkg-config \
+    libpq-dev \
+    && apt-get clean
+
+RUN curl -sSL https://github.com/jwilder/dockerize/releases/download/v0.6.1/dockerize-linux-amd64-v0.6.1.tar.gz | tar -xz -C /usr/local/bin
+
+COPY requirements.txt .
+
+RUN pip install -r requirements.txt
+
+COPY . .
+
+RUN ls -lah /usr/local/bin/dockerize && dockerize --version

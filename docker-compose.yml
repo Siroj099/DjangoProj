@@ -14,7 +14,6 @@ services:
     environment:
       - DEBUG=True
 
-
   db:
     image: postgres:15
     restart: always
@@ -29,12 +28,24 @@ services:
     env_file:
       - .env
 
-
   redis:
     image: redis:7.0.15
     restart: always
     ports:
       - "6379:6379"
+  
+  test:
+    build: 
+      context: .
+      dockerfile: dockerfile.test
+    command: dockerize -wait tcp://db:5432 -timeout 60s pytest -rP
+    volumes:
+      - .:/code
+    depends_on:
+      - db
+      - web
+    environment:
+      - DEBUG=True
 
 volumes:
   postgres_data:
