@@ -22,7 +22,7 @@ def test_comment_create(db, comment_factory):
     assert child_comment.parent == comment
     assert child_comment.ticket == comment.ticket
     assert db_child.ticket == db_comment.ticket
-    assert db_child.parent == db_comment
+    assert db_child.parent_id == db_comment.id
     
 def test_author_create(db, author_factory):
     author = author_factory.create()
