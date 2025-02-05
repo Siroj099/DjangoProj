@@ -2,10 +2,10 @@
 *.pyo
 *.pyd
 __pycache__/
+djangoApp/__pycache__/
+ticketProject/__pycache__/
+tests/create_tests/__pycache__/
 venv/
 *.sqlite3
-/venv
-/__pycache__
-/djangoApp/__pycache__/
 dump.rdb
 .vscode

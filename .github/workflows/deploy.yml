@@ -40,5 +40,3 @@ jobs:
                 sudo docker compose up -d --build
                 sudo docker exec djangoproj-web-1 python manage.py migrate
                 sudo docker exec djangoproj-web-1 python manage.py collectstatic --noinput
-
-         
