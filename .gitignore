@@ -9,3 +9,5 @@ venv/
 *.sqlite3
 dump.rdb
 .vscode
+.env
+private_key.pem

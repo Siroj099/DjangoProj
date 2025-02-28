@@ -1,8 +1,12 @@
 asgiref==3.8.1
 async-timeout==5.0.1
+boto3==1.37.0
+botocore==1.37.0
 certifi==2025.1.31
+cffi==1.17.1
 charset-normalizer==3.4.1
 colorama==0.4.6
+cryptography==44.0.1
 Django==5.1.4
 django-debug-toolbar==4.4.6
 django-environ==0.12.0
@@ -17,11 +21,15 @@ gunicorn==23.0.0
 idna==3.10
 inflection==0.5.1
 iniconfig==2.0.0
+jmespath==1.0.1
 Markdown==3.7
 packaging==24.2
 pluggy==1.5.0
 psycopg-binary==3.2.3
 psycopg2-binary==2.9.10
+pyasn1==0.6.1
+pycparser==2.22
+PyJWT==2.10.1
 pytailwindcss==0.2.0
 pytest==8.3.4
 pytest-django==4.9.0
@@ -31,6 +39,7 @@ pytz==2024.2
 PyYAML==6.0.2
 redis==5.2.1
 requests==2.32.3
+s3transfer==0.11.2
 six==1.17.0
 sqlparse==0.5.3
 tomli==2.2.1

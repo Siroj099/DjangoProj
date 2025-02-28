@@ -3,6 +3,7 @@ from django.http import JsonResponse
 from django.db.models import Q, Prefetch
 from django.template.loader import render_to_string
 from django.core.paginator import Paginator
+from django.conf import settings
 from django.views.decorators.http import require_GET, require_POST
 from django.core.cache import cache
 from django.utils import timezone
@@ -13,13 +14,21 @@ from datetime import datetime
 from dateutil import parser
 from .models import Ticket, Comment, Author
 from .serializers import TicketSerializer
+from urllib.parse import urlparse, urlencode
 import json
-
+# import boto3   #use this to retrieve photo from S3 bucket 
+import base64
+from cryptography.hazmat.primitives import serialization, hashes
+from cryptography.hazmat.primitives.asymmetric import padding
+import datetime
 
 @require_GET
 def say_hello(request):
     page_number = int(request.GET.get('page', 1))
     cache_key = f'tickets_page_{page_number}'
+    
+    s3_key = "240c3715e84274159c495e6536199126.jpg"
+    image_url = generate_signed_url(s3_key)
     
     cached_data = cache.get(cache_key)
     if cached_data:
@@ -44,6 +53,7 @@ def say_hello(request):
     context = {
         'tickets': serialized_tickets.data,
         'page_range': list(paginator.get_elided_page_range(page_obj.number, on_each_side=2, on_ends=1)),
+        "image_url": image_url,
     }
     cache.set(cache_key, context, 30)
     return render(request, 'main_page.html', context)
@@ -318,3 +328,55 @@ def get_prefetch_comments():
             to_attr='parent'
         )
     ]
+
+# To access photo from S3 bucket directly
+# def get_presigned_url(s3_key):
+#     s3_client = boto3.client(
+#         's3',
+#         aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+#         aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+#         region_name=settings.AWS_S3_REGION_NAME,
+#     )
+#     url = s3_client.generate_presigned_url(
+#         'get_object',
+#         Params={'Bucket': settings.AWS_STORAGE_BUCKET_NAME, 'Key': s3_key},
+#         ExpiresIn=3600
+#     )
+#     return url
+
+CLOUDFRONT_DOMAIN = settings.AWS_CLOUDFRONT_DOMAIN_NAME
+KEY_PAIR_ID = settings.AWS_CLOUDFRONT_KEY_ID
+PRIVATE_KEY_PATH = settings.AWS_SECRET_CLOUDFRONT_KEY
+
+def generate_signed_url(file_path, expires_in=3600):
+    expires = int(datetime.datetime.now().timestamp()) + expires_in
+    resource_url = f"{CLOUDFRONT_DOMAIN}/{file_path}"
+
+    policy = {
+        "Statement": [
+            {
+                "Resource": resource_url,
+                "Condition": {
+                    "DateLessThan": {"AWS:EpochTime": expires}
+                }
+            }
+        ]
+    }
+
+    policy_json = json.dumps(policy).replace(" ", "")
+    with open(PRIVATE_KEY_PATH, "rb") as key_file:
+        private_key = key_file.read()
+    
+    key = serialization.load_pem_private_key(private_key, password=None)
+
+    signature = base64.b64encode(key.sign(
+        policy_json.encode(),
+        padding.PKCS1v15(),
+        hashes.SHA1()
+    ))
+    
+    signature = signature.decode("utf-8").replace("+", "-").replace("=", "_").replace("/", "~")
+
+    signed_url = f"{resource_url}?Expires={expires}&Signature={signature}&Key-Pair-Id={KEY_PAIR_ID}"
+    
+    return signed_url
