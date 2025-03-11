@@ -11,3 +11,5 @@ dump.rdb
 .vscode
 .env
 private_key.pem
+minio_data1/
+minio_data2/

@@ -42,13 +42,16 @@
 </head>
 <body class="bg-gray-100">
     <div>
-        <img src="{{ image_url }}" alt="Secure Image" height="500" width="500">
+        <img src="{{ image_url }}" alt="Secure Image" height="300" width="300">
     </div>
     <!-- Navbar -->
     <div class="bg-white shadow-md">
         <div class="container mx-auto px-5 py-4">
             <h1 class="text-2xl font-bold">Tickets</h1>
         </div>
+    </div>
+    <div>
+        <img src="{{ minio_image_url }}" alt="Secure Image" height="300" width="300">
     </div>
     <!-- Live Search Bar and Tickets-->
     {% include 'search_bar.html' %}

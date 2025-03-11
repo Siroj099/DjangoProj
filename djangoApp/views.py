@@ -16,7 +16,7 @@ from .models import Ticket, Comment, Author
 from .serializers import TicketSerializer
 from urllib.parse import urlparse, urlencode
 import json
-# import boto3   #use this to retrieve photo from S3 bucket 
+import boto3
 import base64
 from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import padding
@@ -29,6 +29,7 @@ def say_hello(request):
     
     s3_key = "240c3715e84274159c495e6536199126.jpg"
     image_url = generate_signed_url(s3_key)
+    minio_image_url = generate_signed_url_minio(object_name="LOL.jpg")
     
     cached_data = cache.get(cache_key)
     if cached_data:
@@ -54,6 +55,7 @@ def say_hello(request):
         'tickets': serialized_tickets.data,
         'page_range': list(paginator.get_elided_page_range(page_obj.number, on_each_side=2, on_ends=1)),
         "image_url": image_url,
+        "minio_image_url": minio_image_url,
     }
     cache.set(cache_key, context, 30)
     return render(request, 'main_page.html', context)
@@ -348,7 +350,7 @@ CLOUDFRONT_DOMAIN = settings.AWS_CLOUDFRONT_DOMAIN_NAME
 KEY_PAIR_ID = settings.AWS_CLOUDFRONT_KEY_ID
 PRIVATE_KEY_PATH = settings.AWS_SECRET_CLOUDFRONT_KEY
 
-def generate_signed_url(file_path, expires_in=3600):
+def generate_signed_url(file_path, expires_in=60):
     expires = int(datetime.datetime.now().timestamp()) + expires_in
     resource_url = f"{CLOUDFRONT_DOMAIN}/{file_path}"
 
@@ -380,3 +382,24 @@ def generate_signed_url(file_path, expires_in=3600):
     signed_url = f"{resource_url}?Expires={expires}&Signature={signature}&Key-Pair-Id={KEY_PAIR_ID}"
     
     return signed_url
+
+MINIO_ENDPOINT=settings.MINIO_ENDPOINT
+MINIO_ACCESS_KEY=settings.MINIO_ACCESS_KEY
+MINIO_SECRET_KEY=settings.MINIO_SECRET_KEY
+MINIO_BUCKET_NAME=settings.MINIO_BUCKET_NAME
+
+def generate_signed_url_minio(object_name, expiration=300):
+    s3_client = boto3.client(
+        "s3",
+        endpoint_url=MINIO_ENDPOINT,
+        aws_access_key_id=MINIO_ACCESS_KEY,
+        aws_secret_access_key=MINIO_SECRET_KEY
+    )
+    
+    url = s3_client.generate_presigned_url(
+        "get_object",
+        Params={"Bucket": MINIO_BUCKET_NAME, "Key": object_name},
+        ExpiresIn=expiration
+    )
+    
+    return url
